@@ -8,6 +8,7 @@ import { StatusBadge } from '../components/ui/StatusBadge'
 import { Button } from '../components/ui/Button'
 import { formatDate } from '../lib/utils'
 import { Plus } from 'lucide-react'
+import { Download } from 'lucide-react'
 
 const STATUSES: InvoiceStatus[] = ['draft', 'sent', 'paid', 'overdue']
 
@@ -69,3 +70,20 @@ export function InvoicesPage() {
     </Layout>
   )
 }
+
+<td className="px-4 py-3">
+  <div className="flex items-center gap-2">
+    <Link to={`/invoices/${inv.id}`} className="text-blue-600 hover:underline font-medium">
+      {inv.invoice_number}
+    </Link>
+    <a
+      href={`${import.meta.env.VITE_API_URL}/invoices/${inv.id}/pdf/`}
+      target="_blank"
+      rel="noreferrer"
+      className="text-gray-400 hover:text-blue-600"
+      title="Download PDF"
+    >
+      <Download size={14} />
+    </a>
+  </div>
+</td>

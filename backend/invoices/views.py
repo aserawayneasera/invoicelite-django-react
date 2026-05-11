@@ -1,11 +1,14 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, generics, status, permissions
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import Sum, Q
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.utils import timezone
 from .models import Invoice, Quote, Payment
 from .serializers import InvoiceSerializer, QuoteSerializer, PaymentSerializer
+import weasyprint
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -113,3 +116,29 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Payment.objects.filter(invoice__owner=self.request.user)
+    
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+import weasyprint
+
+class InvoicePDFView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            invoice = Invoice.objects.prefetch_related('items').get(
+                pk=pk, owner=request.user
+            )
+        except Invoice.DoesNotExist:
+            return Response({'error': 'Not found'}, status=404)
+
+        html = render_to_string('invoices/invoice_pdf.html', {
+            'invoice': invoice,
+            'items': invoice.items.all(),
+        })
+        pdf = weasyprint.HTML(string=html).write_pdf()
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = (
+            f'attachment; filename="invoice-{invoice.invoice_number}.pdf"'
+        )
+        return response

@@ -23,6 +23,8 @@ from accounts.views import RegisterView, MeView
 from clients.views import ClientViewSet
 from invoices.views import InvoiceViewSet, QuoteViewSet, PaymentViewSet
 
+from invoices.views import InvoicePDFView
+
 router = DefaultRouter()
 router.register(r'clients', ClientViewSet, basename='client')
 router.register(r'invoices', InvoiceViewSet, basename='invoice')
@@ -36,4 +38,7 @@ urlpatterns = [
     path('api/auth/token/refresh/', TokenRefreshView.as_view()),
     path('api/auth/me/', MeView.as_view()),
     path('api/', include(router.urls)),
+    # Add this line alongside your existing router registrations
+    path('api/invoices/<int:pk>/pdf/', InvoicePDFView.as_view(), name='invoice-pdf'),
 ]
+
