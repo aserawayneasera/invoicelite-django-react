@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 import api from '../lib/api'
 import type { User } from '../types'
 
@@ -13,7 +13,6 @@ const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-
   const login = async (email: string, password: string) => {
     const { data } = await api.post('/auth/token/', { email, password })
     localStorage.setItem('access_token', data.access)
@@ -21,13 +20,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const me = await api.get('/auth/me/')
     setUser(me.data)
   }
-
   const logout = () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     setUser(null)
   }
-
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
       {children}
