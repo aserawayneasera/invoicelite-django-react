@@ -7,14 +7,26 @@ import { Layout } from '../components/Layout'
 import { StatusBadge } from '../components/ui/StatusBadge'
 import { Button } from '../components/ui/Button'
 import { formatDate } from '../lib/utils'
-import { Plus } from 'lucide-react'
-import { Download } from 'lucide-react'
+import { Plus, Download } from 'lucide-react'
 
 const STATUSES: InvoiceStatus[] = ['draft', 'sent', 'paid', 'overdue']
+
+async function downloadPDF(inv: Invoice) {
+  const response = await api.get(`/invoices/${inv.id}/pdf/`, {
+    responseType: 'blob',
+  })
+  const url = URL.createObjectURL(response.data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `invoice-${inv.invoice_number}.pdf`
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 export function InvoicesPage() {
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | ''>('')
   const [search, setSearch] = useState('')
+  const [downloading, setDownloading] = useState<number | null>(null)
 
   const { data: invoices = [], isLoading } = useQuery<Invoice[]>({
     queryKey: ['invoices', statusFilter, search],
@@ -25,6 +37,15 @@ export function InvoicesPage() {
       return api.get(`/invoices/?${params}`).then(r => r.data)
     },
   })
+
+  async function handleDownload(inv: Invoice) {
+    setDownloading(inv.id)
+    try {
+      await downloadPDF(inv)
+    } finally {
+      setDownloading(null)
+    }
+  }
 
   return (
     <Layout>
@@ -56,7 +77,21 @@ export function InvoicesPage() {
             <tbody className="divide-y divide-gray-100">
               {invoices.map(inv => (
                 <tr key={inv.id}>
-                  <td className="px-4 py-3"><Link to={`/invoices/${inv.id}`} className="text-blue-600 hover:underline font-medium">{inv.invoice_number}</Link></td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Link to={`/invoices/${inv.id}`} className="text-blue-600 hover:underline font-medium">
+                        {inv.invoice_number}
+                      </Link>
+                      <button
+                        onClick={() => handleDownload(inv)}
+                        disabled={downloading === inv.id}
+                        className="text-gray-400 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                        title="Download PDF"
+                      >
+                        <Download size={14} />
+                      </button>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-gray-600">{inv.client_name}</td>
                   <td className="px-4 py-3"><StatusBadge status={inv.status} /></td>
                   <td className="px-4 py-3 text-gray-500">{formatDate(inv.issue_date)}</td>
@@ -70,20 +105,3 @@ export function InvoicesPage() {
     </Layout>
   )
 }
-
-<td className="px-4 py-3">
-  <div className="flex items-center gap-2">
-    <Link to={`/invoices/${inv.id}`} className="text-blue-600 hover:underline font-medium">
-      {inv.invoice_number}
-    </Link>
-    <a
-      href={`${import.meta.env.VITE_API_URL}/invoices/${inv.id}/pdf/`}
-      target="_blank"
-      rel="noreferrer"
-      className="text-gray-400 hover:text-blue-600"
-      title="Download PDF"
-    >
-      <Download size={14} />
-    </a>
-  </div>
-</td>
