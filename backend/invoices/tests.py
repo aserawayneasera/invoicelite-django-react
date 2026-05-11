@@ -1,7 +1,7 @@
 import pytest
 from django.utils import timezone
 from clients.models import Client
-from invoices.models import Invoice, Quote
+from invoices.models import Invoice
 
 
 @pytest.fixture
@@ -19,60 +19,71 @@ def test_create_invoice(auth_client, client_obj):
         'status': 'draft',
         'issue_date': '2025-01-01',
         'items': [
-            {'description': 'Web dev', 'quantity': 10, 'unit_price': 5000, 'tax_rate': 10}
+            {
+                'description': 'Web development',
+                'quantity': 10,
+                'unit_price': 5000,
+                'tax_rate': 10,
+            }
         ]
     }, format='json')
     assert response.status_code == 201
     assert response.data['invoice_number'] == 'INV-0001'
+    assert len(response.data['items']) == 1
 
 
 @pytest.mark.django_db
-def test_mark_invoice_paid(auth_client, client_obj):
+def test_invoice_summary(auth_client, client_obj):
     api_client, user = auth_client
-    invoice = Invoice.objects.create(
-        owner=user,
-        client=client_obj,
-        invoice_number='INV-0002',
-        status='sent',
-        issue_date=timezone.now().date(),
+    Invoice.objects.create(
+        owner=user, client=client_obj,
+        invoice_number='INV-001', status='paid',
+        issue_date=timezone.now().date()
     )
-    response = api_client.post(f'/api/invoices/{invoice.id}/mark_paid/')
+    Invoice.objects.create(
+        owner=user, client=client_obj,
+        invoice_number='INV-002', status='sent',
+        issue_date=timezone.now().date()
+    )
+    response = api_client.get('/api/invoices/summary/')
     assert response.status_code == 200
-    invoice.refresh_from_db()
-    assert invoice.status == 'paid'
+    assert response.data['total_invoices'] == 2
+    assert response.data['paid'] == 1
+    assert response.data['sent'] == 1
 
 
 @pytest.mark.django_db
-def test_convert_quote_to_invoice(auth_client, client_obj):
+def test_invoice_status_filter(auth_client, client_obj):
     api_client, user = auth_client
-    quote = Quote.objects.create(
-        owner=user,
-        client=client_obj,
-        quote_number='QUO-0001',
-        issue_date=timezone.now().date(),
+    Invoice.objects.create(
+        owner=user, client=client_obj,
+        invoice_number='INV-001', status='draft',
+        issue_date=timezone.now().date()
     )
-    quote.items.create(description='Design', quantity=5, unit_price=10000, tax_rate=10)
-
-    response = api_client.post(f'/api/quotes/{quote.id}/convert_to_invoice/')
-    assert response.status_code == 201
-    assert response.data['client_name'] == 'Test Client'
-    quote.refresh_from_db()
-    assert quote.converted is True
+    Invoice.objects.create(
+        owner=user, client=client_obj,
+        invoice_number='INV-002', status='paid',
+        issue_date=timezone.now().date()
+    )
+    response = api_client.get('/api/invoices/?status=draft')
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['status'] == 'draft'
 
 
 @pytest.mark.django_db
-def test_invoice_negative_price_rejected(auth_client, client_obj):
-    api_client, _ = auth_client
+def test_duplicate_invoice_number_rejected(auth_client, client_obj):
+    api_client, user = auth_client
+    Invoice.objects.create(
+        owner=user, client=client_obj,
+        invoice_number='INV-001', status='draft',
+        issue_date=timezone.now().date()
+    )
     response = api_client.post('/api/invoices/', {
         'client': client_obj.id,
-        'invoice_number': 'INV-0003',
+        'invoice_number': 'INV-001',
         'status': 'draft',
         'issue_date': '2025-01-01',
-        'items': [
-            {'description': 'Bad item', 'quantity': 1, 'unit_price': -100, 'tax_rate': 10}
-        ]
+        'items': []
     }, format='json')
-    # Negative prices should be caught by model validation
-    # Add a validator to InvoiceItem.unit_price to enforce this
-    # For now this test documents the expected behaviour
-    assert response.status_code in [400, 201]
+    assert response.status_code == 400

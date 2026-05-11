@@ -1,5 +1,5 @@
 import pytest
-from django.urls import reverse
+from clients.models import Client
 
 
 @pytest.mark.django_db
@@ -17,7 +17,6 @@ def test_create_client(auth_client):
 @pytest.mark.django_db
 def test_list_clients_only_own(auth_client):
     from django.contrib.auth import get_user_model
-    from clients.models import Client
     client_api, user = auth_client
     User = get_user_model()
 
@@ -34,9 +33,37 @@ def test_list_clients_only_own(auth_client):
 
 
 @pytest.mark.django_db
+def test_unauthenticated_cannot_list_clients(client):
+    response = client.get('/api/clients/')
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_update_client(auth_client):
+    client_api, user = auth_client
+    c = Client.objects.create(owner=user, name='Old Name')
+    response = client_api.patch(f'/api/clients/{c.id}/', {'name': 'New Name'})
+    assert response.status_code == 200
+    assert response.data['name'] == 'New Name'
+
+
+@pytest.mark.django_db
 def test_delete_client(auth_client):
-    from clients.models import Client
     client_api, user = auth_client
     c = Client.objects.create(owner=user, name='To Delete')
     response = client_api.delete(f'/api/clients/{c.id}/')
     assert response.status_code == 204
+    assert not Client.objects.filter(id=c.id).exists()
+
+
+@pytest.mark.django_db
+def test_cannot_delete_other_users_client(auth_client):
+    from django.contrib.auth import get_user_model
+    client_api, user = auth_client
+    User = get_user_model()
+    other = User.objects.create_user(
+        email='x@x.com', username='x', password='pass'
+    )
+    c = Client.objects.create(owner=other, name='Not Mine')
+    response = client_api.delete(f'/api/clients/{c.id}/')
+    assert response.status_code == 404
