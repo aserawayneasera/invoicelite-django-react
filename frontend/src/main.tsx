@@ -8,6 +8,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { ClientsPage } from './pages/ClientsPage'
 import { InvoicesPage } from './pages/InvoicesPage'
 import './index.css'
+import { QuotesPage } from './pages/QuotesPage'
 
 const queryClient = new QueryClient()
 
@@ -22,6 +23,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <Route path="/clients" element={<ClientsPage />} />
             <Route path="/invoices" element={<InvoicesPage />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* // Add inside <Routes>: */}
+            <Route path="/quotes" element={<QuotesPage />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
