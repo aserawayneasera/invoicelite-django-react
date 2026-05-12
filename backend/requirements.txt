@@ -11,8 +11,10 @@ dj-database-url==3.1.2
 Django==6.0.5
 django-cors-headers==4.9.0
 django-filter==25.2
+django-modelcluster==6.5
 django-permissionedforms==0.1
 django-stubs-ext==6.0.4
+django-taggit==6.1.0
 django-tasks==0.12.0
 django-treebeard==5.1.0
 djangorestframework==3.17.1
@@ -50,6 +52,7 @@ tinycss2==1.5.1
 tinyhtml5==2.1.0
 typing_extensions==4.15.0
 urllib3==2.7.0
+wagtail==7.4
 weasyprint==68.1
 webencodings==0.5.1
 whitenoise==6.12.0
