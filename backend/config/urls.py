@@ -22,8 +22,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from accounts.views import RegisterView, MeView
 from clients.views import ClientViewSet
 from invoices.views import InvoiceViewSet, QuoteViewSet, PaymentViewSet
-
 from invoices.views import InvoicePDFView
+from wagtail.admin import urls as wagtailadmin_urls
+from wagtail import urls as wagtail_urls
 
 router = DefaultRouter()
 router.register(r'clients', ClientViewSet, basename='client')
@@ -40,5 +41,7 @@ urlpatterns = [
     path('api/', include(router.urls)),
     # Add this line alongside your existing router registrations
     path('api/invoices/<int:pk>/pdf/', InvoicePDFView.as_view(), name='invoice-pdf'),
+    path('cms/', include(wagtailadmin_urls)),
+    path('help/', include(wagtail_urls)),
 ]
 

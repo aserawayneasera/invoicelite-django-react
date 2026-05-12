@@ -33,6 +33,20 @@ INSTALLED_APPS = [
     'accounts',
     'clients',
     'invoices',
+    # Wagtail
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail',
+    'modelcluster',
+    'taggit',
 ]
 
 MIDDLEWARE = [
@@ -45,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -118,3 +133,6 @@ import dj_database_url
 import os
 if os.environ.get('DATABASE_URL'):
     DATABASES['default'] = dj_database_url.parse(os.environ['DATABASE_URL'])
+
+WAGTAIL_SITE_NAME = 'InvoiceLite'
+WAGTAILADMIN_BASE_URL = 'http://localhost:8000'
