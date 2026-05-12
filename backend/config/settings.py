@@ -26,14 +26,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Third party
-    'rest_framework',
-    'corsheaders',
-    # Local
+    'django.contrib.postgres',        # needed by wagtail
+
+    # Your apps
     'accounts',
     'clients',
     'invoices',
-    # Wagtail
+    'help_pages',
+
+    # DRF
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
+
+    # Wagtail (once only)
     'wagtail.contrib.forms',
     'wagtail.contrib.redirects',
     'wagtail.embeds',
