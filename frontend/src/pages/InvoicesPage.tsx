@@ -77,7 +77,7 @@ export function InvoicesPage() {
             <tbody className="divide-y divide-gray-100">
               {invoices.map(inv => (
                 <tr key={inv.id}>
-                  <td className="px-4 py-3">
+                  {/* <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Link to={`/invoices/${inv.id}`} className="text-blue-600 hover:underline font-medium">
                         {inv.invoice_number}
@@ -90,6 +90,22 @@ export function InvoicesPage() {
                       >
                         <Download size={14} />
                       </button>
+                    </div>
+                  </td> */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Link to={`/invoices/${inv.id}`} className="text-blue-600 hover:underline font-medium">
+                        {inv.invoice_number}
+                      </Link>
+                      <a
+                        href={`${import.meta.env.VITE_API_URL}/invoices/${inv.id}/pdf/`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-gray-400 hover:text-blue-600"
+                        title="Download PDF"
+                      >
+                        <Download size={14} />
+                      </a>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{inv.client_name}</td>
