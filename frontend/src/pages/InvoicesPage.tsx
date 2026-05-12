@@ -77,7 +77,7 @@ export function InvoicesPage() {
             <tbody className="divide-y divide-gray-100">
               {invoices.map(inv => (
                 <tr key={inv.id}>
-                  {/* <td className="px-4 py-3">
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Link to={`/invoices/${inv.id}`} className="text-blue-600 hover:underline font-medium">
                         {inv.invoice_number}
@@ -91,7 +91,7 @@ export function InvoicesPage() {
                         <Download size={14} />
                       </button>
                     </div>
-                  </td> */}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Link to={`/invoices/${inv.id}`} className="text-blue-600 hover:underline font-medium">
