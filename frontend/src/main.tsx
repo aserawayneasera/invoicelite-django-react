@@ -9,6 +9,16 @@ import { ClientsPage } from './pages/ClientsPage'
 import { InvoicesPage } from './pages/InvoicesPage'
 import './index.css'
 import { QuotesPage } from './pages/QuotesPage'
+import { ErrorBoundary } from './components/ErrorBoundary'
+
+// Wrap your BrowserRouter:
+<ErrorBoundary>
+  <BrowserRouter>
+    <Routes>
+      ...
+    </Routes>
+  </BrowserRouter>
+</ErrorBoundary>
 
 const queryClient = new QueryClient()
 
