@@ -1,84 +1,106 @@
 # InvoiceLite
 
-A full-stack invoicing SaaS application for managing clients and invoices — built with Django REST Framework, React, TypeScript, and PostgreSQL.
+A full-stack invoicing SaaS application built with React, TypeScript, Python/Django, and PostgreSQL.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://invoicelite-django-react.vercel.app)
-[![API](https://img.shields.io/badge/API-Render-46E3B7?style=for-the-badge&logo=render)](https://invoicelite-api.onrender.com)
-[![Python](https://img.shields.io/badge/Python-Django-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.djangoproject.com/)
-[![React](https://img.shields.io/badge/React-TypeScript-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+**Live demo:** [invoicelite-django-react.vercel.app](https://invoicelite-django-react.vercel.app)  
+**API:** Deployed on Render  
+**Source:** [github.com/aserawayneasera/invoicelite-django-react](https://github.com/aserawayneasera/invoicelite-django-react)
 
 ---
 
-## Live Demo
+## What It Does
 
-🌐 **Frontend:** https://invoicelite-django-react.vercel.app  
-🔌 **API:** https://invoicelite-api.onrender.com  
+InvoiceLite lets freelancers and small businesses manage their billing end-to-end:
 
-**Test login:**
-```
-Email:    test@test.com
-Password: password123
-```
-
-> ⚠️ The backend runs on Render's free tier — the first request may take 30–60 seconds to wake up.
+- Register and log in with JWT authentication (with automatic token refresh)
+- Manage clients
+- Create invoices with multiple line items, tax rates, and status tracking
+- Convert quotes to invoices
+- Download invoices as professionally formatted PDFs
+- View a dashboard with revenue and invoice statistics by status
+- Read help content managed through a Wagtail CMS
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 18, TypeScript, Vite, Tailwind CSS, React Query, Axios |
-| Backend | Python, Django 6, Django REST Framework |
-| Auth | JWT (djangorestframework-simplejwt) — access + refresh tokens |
-| Database | PostgreSQL, Django ORM |
-| Deployment | Vercel (frontend), Render (backend + managed PostgreSQL) |
+### Frontend
+| Tool | Purpose |
+|------|---------|
+| React 18 + TypeScript | UI framework |
+| Vite | Build tool |
+| Tailwind CSS | Styling |
+| React Query | Server state and caching |
+| Axios | HTTP client with JWT interceptor |
+| React Router | Client-side routing |
+| Lucide React | Icons |
+| Cypress | End-to-end tests |
+
+### Backend
+| Tool | Purpose |
+|------|---------|
+| Python + Django 6 | Web framework |
+| Django REST Framework | REST API |
+| SimpleJWT | JWT authentication |
+| WeasyPrint | PDF generation from HTML templates |
+| Wagtail | CMS for help/FAQ content |
+| PostgreSQL | Database |
+| pytest + pytest-django | Test suite |
+| Gunicorn + WhiteNoise | Production server |
+
+### Deployment
+| Service | What's deployed |
+|---------|----------------|
+| Vercel | React frontend |
+| Render | Django API + PostgreSQL |
 
 ---
 
 ## Features
 
-- ✅ User registration and JWT authentication
-- ✅ Client management — create, edit, delete
-- ✅ Invoice creation with line items
-- ✅ Invoice status tracking: `draft` → `sent` → `paid` / `overdue`
-- ✅ Invoice search and status filtering
-- ✅ Dashboard with live invoice statistics
-- ✅ CORS-secured API with environment-based configuration
-- ✅ Fully deployed to production
+### Authentication
+- Register with email and password
+- JWT access + refresh tokens
+- Automatic silent token refresh via Axios response interceptor — users stay logged in without re-entering credentials
+- Redirect to login on 401
+
+### Clients
+- Create, read, update, delete clients
+- Each client is scoped to the authenticated user — no data leakage between accounts
+
+### Invoices
+- Create invoices with multiple line items (description, quantity, unit price, tax rate)
+- Status workflow: `draft → sent → paid / overdue`
+- Filter by status and search by client or invoice number
+- Duplicate invoice number validation
+- Download as PDF — authenticated blob download, not a plain link
+
+### Quotes
+- Create quotes with expiry dates and notes
+- One-click conversion to invoice
+
+### PDF Export
+- Professionally formatted PDF generated server-side with WeasyPrint
+- Includes line items, totals, tax, status badge, and notes
+- Served as an authenticated API response (Bearer token required)
+- Frontend fetches as a blob and triggers a native browser download
+
+### Dashboard
+- Total invoices, paid, sent, and overdue counts
+- Revenue summary
+
+### CMS (Wagtail)
+- Help and FAQ content managed through Wagtail admin at `/cms/`
+- `HelpIndexPage` and `HelpArticlePage` models with rich text editor
+- Accessible at `/help/`
+
+### Error Handling
+- React Error Boundary wraps the entire app — a broken component cannot crash the whole UI
+- API errors surface cleanly to the user
 
 ---
 
-## Architecture
-
-```
-invoicelite/
-├── backend/                  # Django REST API
-│   ├── accounts/             # User model + JWT auth endpoints
-│   ├── clients/              # Client CRUD API
-│   ├── invoices/             # Invoice + InvoiceItem API, summary endpoint
-│   ├── config/               # Django settings, URLs
-│   └── requirements.txt
-├── frontend/                 # React + TypeScript SPA
-│   ├── src/
-│   │   ├── components/       # Layout, Button, StatusBadge
-│   │   ├── contexts/         # AuthContext (JWT state)
-│   │   ├── pages/            # Dashboard, Clients, Invoices, Login
-│   │   ├── lib/              # Axios instance, utility functions
-│   │   └── types/            # TypeScript interfaces for API responses
-│   └── vite.config.ts
-└── README.md
-```
-
-## Data Model
-
-```
-User ──< Client ──< Invoice ──< InvoiceItem
-```
-
----
-
-## Local Development
+## Running Locally
 
 ### Prerequisites
 - Python 3.11+
@@ -89,88 +111,125 @@ User ──< Client ──< Invoice ──< InvoiceItem
 
 ```bash
 cd backend
-python3 -m venv venv && source venv/bin/activate
+python -m venv ../venv
+source ../venv/bin/activate
 pip install -r requirements.txt
-```
 
-Create a `.env` file in `backend/`:
-```
-SECRET_KEY=your-secret-key
-DEBUG=True
-DATABASE_URL=postgres://localhost/invoicelite_dev
-CORS_ALLOWED_ORIGINS=http://localhost:5173
-```
+# Create a .env file (see .env.example)
+cp .env.example .env
 
-```bash
-createdb invoicelite_dev
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
+
+The API runs at `http://localhost:8000`.  
+Wagtail CMS admin at `http://localhost:8000/cms/`.
 
 ### Frontend
 
 ```bash
 cd frontend
 npm install
-```
 
-Create a `.env.local` file in `frontend/`:
-```
-VITE_API_URL=http://localhost:8000/api
-```
+# Create a .env.local file
+echo "VITE_API_URL=http://localhost:8000/api" > .env.local
 
-```bash
 npm run dev
 ```
 
-Visit http://localhost:5173
+The app runs at `http://localhost:5173`.
 
 ---
 
-## API Endpoints
+## Running Tests
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/api/auth/register/` | No | Register new user |
-| POST | `/api/auth/token/` | No | Login — returns JWT |
-| GET | `/api/auth/me/` | Yes | Current user info |
-| GET/POST | `/api/clients/` | Yes | List / create clients |
-| GET/PATCH/DELETE | `/api/clients/{id}/` | Yes | Retrieve / update / delete client |
-| GET/POST | `/api/invoices/` | Yes | List (filterable) / create invoices |
-| GET/PATCH | `/api/invoices/{id}/` | Yes | Retrieve / update invoice |
-| GET | `/api/invoices/summary/` | Yes | Dashboard stats |
+### Backend (pytest)
 
----
+```bash
+cd backend
+source ../venv/bin/activate
+pytest -v
+```
 
-## Key Technical Decisions
+15 tests across three apps:
 
-**Why Django REST Framework?**  
-Batteries-included API framework — serializers, viewsets, authentication, and permissions in one place. Faster to build production-ready APIs than assembling separate libraries.
+| App | Tests |
+|-----|-------|
+| `accounts` | Register, login, wrong password, `/me` auth required, `/me` returns user |
+| `clients` | Create, list own only, unauthenticated blocked, update, delete, cannot delete other user's client |
+| `invoices` | Create with line items, summary endpoint, status filter, duplicate number rejected |
 
-**Why JWT authentication?**  
-Stateless — no server-side session storage. Access tokens are short-lived; refresh tokens are longer-lived. Scales horizontally and is the standard for APIs consumed by SPAs.
+### Frontend (Cypress E2E)
 
-**Why React Query?**  
-Handles loading/error states, caching, and automatic refetch after mutations. Eliminates repetitive `useEffect` + `useState` data-fetching boilerplate.
+With both servers running:
 
-**Why separate Vercel + Render deployments?**  
-Frontend and backend can be scaled, deployed, and updated independently. Vercel's CDN is optimised for static assets; Render handles Python/PostgreSQL well.
+```bash
+cd frontend
+npx cypress run       # headless
+npx cypress open      # interactive UI
+```
 
----
-
-## What's Next
-
-- [ ] PDF invoice export (WeasyPrint)
-- [ ] Quote creation and quote → invoice conversion
-- [ ] Automatic JWT token refresh
-- [ ] pytest test coverage for all API endpoints
-- [ ] Wagtail CMS help/FAQ section
+Covers authentication flow and client creation.
 
 ---
 
-## Author
+## Project Structure
 
-**Asera Wayne Asera**  
-PhD Student, Computer Science — Kumamoto University  
-[GitHub](https://github.com/aserawayneasera) · [Email](mailto:asera.wa@gmail.com)
+```
+invoicelite/
+├── backend/
+│   ├── accounts/          # Custom user model, auth views
+│   ├── clients/           # Client CRUD
+│   ├── invoices/          # Invoice, Quote, Payment, PDF export
+│   │   └── templates/invoices/invoice_pdf.html
+│   ├── help_pages/        # Wagtail CMS models
+│   ├── config/            # Django settings, URLs
+│   ├── conftest.py        # pytest fixtures
+│   └── requirements.txt
+└── frontend/
+    ├── src/
+    │   ├── components/    # Layout, ErrorBoundary, UI primitives
+    │   ├── contexts/      # AuthContext
+    │   ├── lib/           # api.ts (Axios + interceptors), utils
+    │   ├── pages/         # Dashboard, Invoices, Quotes, Clients, Login
+    │   └── types/         # TypeScript interfaces
+    └── cypress/e2e/       # E2E tests
+```
+
+---
+
+## Data Model
+
+```
+User
+ └── Client (owner FK)
+      └── Invoice (client FK, owner FK)
+           ├── InvoiceItem (invoice FK)
+           └── Payment (invoice FK)
+      └── Quote (client FK, owner FK)
+```
+
+All resources are owner-scoped — the API filters every query by `request.user`, so a user can only ever see their own data.
+
+---
+
+## Key Design Decisions
+
+**Why JWT over sessions?** Stateless auth works cleanly with a decoupled frontend/backend on separate domains (Vercel + Render). Sessions would require shared cookie configuration across domains.
+
+**Why React Query over plain useEffect?** Automatic caching, background refetching, and loading/error states without manual boilerplate. The dashboard and invoice list stay fresh without extra code.
+
+**Why WeasyPrint for PDFs?** It renders PDFs from HTML + CSS templates, so the PDF layout is maintained with the same CSS skills used for the rest of the app — no proprietary PDF DSL to learn.
+
+**Why Wagtail for help content?** Hard-coded help text requires a developer to update it. A CMS lets non-technical team members manage help content through a visual editor without touching code — the right separation of concerns for a SaaS product.
+
+---
+
+## What I Would Add Next
+
+- Payment recording and status transitions
+- Stripe integration for online payment links
+- Email delivery of invoices via SendGrid
+- Multi-currency support
+- Recurring invoice scheduling
